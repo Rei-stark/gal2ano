@@ -34,10 +34,9 @@ st.set_page_config(page_title="Mural de Estudantes", layout="centered")
 
 st.title("📸 Mural de Fotos da Vizinhança - 2o. ano fundamental")
 
-# Menu de navegação na barra lateral
-menu = st.sidebar.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"])
-st.sidebar.markdown("---")
-st.sidebar.markdown("<p style='font-size:0.85rem; color:#555;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
+menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"], horizontal=True)
+
+st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 8px;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
 
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
@@ -63,13 +62,10 @@ if menu == "Enviar Imagens":
             
             # Mostra uma miniatura de cada imagem com um campo de texto ao lado
             for i, arquivo in enumerate(arquivos_enviados):
-                col1, col2 = st.columns([1, 3])
-                with col1:
-                    img = Image.open(arquivo)
-                    st.image(img, use_container_width=True)
-                with col2:
-                    legenda = st.text_input(f"Legenda da imagem {i+1}:", key=f"legenda_{i}")
-                    legendas.append(legenda)
+                img = Image.open(arquivo)
+                st.image(img, use_container_width=True)
+                legenda = st.text_input(f"Legenda da imagem {i+1}:", key=f"legenda_{i}")
+                legendas.append(legenda)
             
             # Botão para salvar tudo
             if st.button("Enviar Tudo"):
@@ -155,22 +151,17 @@ elif menu == "Ver Galeria de Todos":
 
             for estudante, itens in grupos_por_estudante.items():
                 st.subheader(estudante)
-                row_columns = st.columns(3)
-                for idx, item in enumerate(itens):
-                    if idx > 0 and idx % 3 == 0:
-                        row_columns = st.columns(3)
-
-                    with row_columns[idx % 3]:
-                        if os.path.exists(item["caminho_imagem"]):
-                            st.markdown(
-                                "<div class='gallery-card'>",
-                                unsafe_allow_html=True,
-                            )
-                            st.image(item["caminho_imagem"], use_container_width=True)
-                            st.markdown(
-                                f"<p class='legend-text'>" \
-                                f"{item['legenda'] or 'Sem legenda'}" \
-                                f"</p>",
-                                unsafe_allow_html=True,
-                            )
-                            st.markdown("</div>", unsafe_allow_html=True)
+                for item in itens:
+                    if os.path.exists(item["caminho_imagem"]):
+                        st.markdown(
+                            "<div class='gallery-card'>",
+                            unsafe_allow_html=True,
+                        )
+                        st.image(item["caminho_imagem"], use_container_width=True)
+                        st.markdown(
+                            f"<p class='legend-text'>" \
+                            f"{item['legenda'] or 'Sem legenda'}" \
+                            f"</p>",
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown("</div>", unsafe_allow_html=True)
