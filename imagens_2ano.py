@@ -93,7 +93,6 @@ if menu == "Enviar Imagens":
                 salvar_dados(dados)
                 st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
                 st.session_state.uploader_id += 1
-                st.experimental_rerun()
 
     if st.session_state.upload_message:
         st.success(st.session_state.upload_message)
