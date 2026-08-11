@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import json
 import uuid
-from PIL import Image
+from PIL import Image, ImageOps
 
 # ==========================================
 # CONFIGURAÇÕES INICIAIS E BANCO DE DADOS
@@ -38,25 +38,39 @@ menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de 
 
 st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 8px;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
 
+if "upload_message" not in st.session_state:
+    st.session_state.upload_message = ""
+
+if "arquivo_enviado" not in st.session_state:
+    st.session_state.arquivo_enviado = None
+
+if "legenda" not in st.session_state:
+    st.session_state.legenda = ""
+
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
     st.header("Envie seu trabalho")
     
     nome = st.text_input("Qual o seu nome?")
     
+    if 'upload_message' in st.session_state and st.session_state.upload_message:
+        st.success(st.session_state.upload_message)
+
     # Upload de arquivo único para melhor compatibilidade no Android
     arquivo_enviado = st.file_uploader(
         "Selecione uma imagem por vez", 
         type=["png", "jpg", "jpeg"], 
-        accept_multiple_files=False
+        accept_multiple_files=False,
+        key="arquivo_enviado"
     )
 
     if arquivo_enviado:
         st.write("---")
         st.subheader("Pré-visualização da imagem")
         img = Image.open(arquivo_enviado)
+        img = ImageOps.exif_transpose(img)
         st.image(img, use_container_width=True)
-        legenda = st.text_input("Legenda da imagem")
+        legenda = st.text_input("Legenda da imagem", key="legenda")
 
         if st.button("Enviar Esta Imagem"):
             if not nome:
@@ -80,7 +94,14 @@ if menu == "Enviar Imagens":
                 })
                 
                 salvar_dados(dados)
-                st.success("🎉 Imagem enviada com sucesso! Você pode enviar outra imagem agora.")
+                st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
+                st.session_state.arquivo_enviado = None
+                st.session_state.legenda = ""
+                st.experimental_rerun()
+
+    if st.session_state.upload_message:
+        st.success(st.session_state.upload_message)
+        st.session_state.upload_message = ""
 
 # --- ABA 2: VER GALERIA ---
 elif menu == "Ver Galeria de Todos":
