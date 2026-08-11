@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 import uuid
+import io
 from PIL import Image
 
 # ==========================================
@@ -44,55 +45,42 @@ if menu == "Enviar Imagens":
     
     nome = st.text_input("Qual o seu nome?")
     
-    # Upload de múltiplos arquivos
-    arquivos_enviados = st.file_uploader(
-        "Selecione até 10 imagens", 
+    # Upload de arquivo único para melhor compatibilidade no Android
+    arquivo_enviado = st.file_uploader(
+        "Selecione uma imagem por vez", 
         type=["png", "jpg", "jpeg"], 
-        accept_multiple_files=True
+        accept_multiple_files=False
     )
+
+    legenda = st.text_input("Legenda da imagem:")
     
-    if arquivos_enviados:
-        if len(arquivos_enviados) > 10:
-            st.error("⚠️ Por favor, selecione no máximo 10 imagens.")
-        else:
-            st.write("---")
-            st.subheader("Adicione uma legenda para cada imagem:")
-            
-            legendas = []
-            
-            # Mostra uma miniatura de cada imagem com um campo de texto ao lado
-            for i, arquivo in enumerate(arquivos_enviados):
-                img = Image.open(arquivo)
-                st.image(img, use_container_width=True)
-                legenda = st.text_input(f"Legenda da imagem {i+1}:", key=f"legenda_{i}")
-                legendas.append(legenda)
-            
-            # Botão para salvar tudo
-            if st.button("Enviar Tudo"):
-                if not nome:
-                    st.warning("Por favor, preencha o seu nome antes de enviar!")
-                else:
-                    dados = carregar_dados()
+    if arquivo_enviado:
+        st.write("---")
+        st.subheader("Pré-visualização da imagem")
+        img = Image.open(arquivo_enviado)
+        st.image(img, use_container_width=True)
+
+        if st.button("Enviar Esta Imagem"):
+            if not nome:
+                st.warning("Por favor, preencha o seu nome antes de enviar!")
+            else:
+                dados = carregar_dados()
+                
+                extensao = arquivo_enviado.name.split('.')[-1]
+                novo_nome_arquivo = f"{uuid.uuid4()}.{extensao}"
+                caminho_arquivo = os.path.join(PASTA_UPLOADS, novo_nome_arquivo)
+                
+                with open(caminho_arquivo, "wb") as f:
+                    f.write(arquivo_enviado.getbuffer())
                     
-                    for i, arquivo in enumerate(arquivos_enviados):
-                        # Gera um nome único para o arquivo para evitar substituições
-                        extensao = arquivo.name.split('.')[-1]
-                        novo_nome_arquivo = f"{uuid.uuid4()}.{extensao}"
-                        caminho_arquivo = os.path.join(PASTA_UPLOADS, novo_nome_arquivo)
-                        
-                        # Salva a imagem na pasta
-                        with open(caminho_arquivo, "wb") as f:
-                            f.write(arquivo.getbuffer())
-                            
-                        # Adiciona as informações no nosso banco de dados JSON
-                        dados.append({
-                            "estudante": nome,
-                            "caminho_imagem": caminho_arquivo,
-                            "legenda": legendas[i]
-                        })
-                        
-                    salvar_dados(dados)
-                    st.success("🎉 Imagens enviadas com sucesso! Vá para a 'Galeria' no menu para ver.")
+                dados.append({
+                    "estudante": nome,
+                    "caminho_imagem": caminho_arquivo,
+                    "legenda": legenda
+                })
+                
+                salvar_dados(dados)
+                st.success("🎉 Imagem enviada com sucesso! Você pode enviar outra imagem agora.")
 
 # --- ABA 2: VER GALERIA ---
 elif menu == "Ver Galeria de Todos":
