@@ -36,6 +36,8 @@ st.title("📸 Mural de Fotos da Vizinhança - 2o. ano fundamental")
 
 # Menu de navegação na barra lateral
 menu = st.sidebar.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"])
+st.sidebar.markdown("---")
+st.sidebar.markdown("<p style='font-size:0.85rem; color:#555;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
 
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
