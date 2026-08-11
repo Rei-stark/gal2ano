@@ -2,7 +2,6 @@ import streamlit as st
 import os
 import json
 import uuid
-import io
 from PIL import Image
 
 # ==========================================
@@ -33,7 +32,7 @@ def salvar_dados(dados):
 # ==========================================
 st.set_page_config(page_title="Mural de Estudantes", layout="centered")
 
-st.title("📸 Mural de Fotos da Vizinhança - 2o. ano fundamental")
+st.title("📸 Mural de Fotos")
 
 menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"], horizontal=True)
 
@@ -52,17 +51,18 @@ if menu == "Enviar Imagens":
         accept_multiple_files=False
     )
 
-    legenda = st.text_input("Legenda da imagem:")
-    
     if arquivo_enviado:
         st.write("---")
         st.subheader("Pré-visualização da imagem")
         img = Image.open(arquivo_enviado)
         st.image(img, use_container_width=True)
+        legenda = st.text_input("Legenda da imagem")
 
         if st.button("Enviar Esta Imagem"):
             if not nome:
                 st.warning("Por favor, preencha o seu nome antes de enviar!")
+            elif not legenda:
+                st.warning("Por favor, insira a legenda da foto antes de enviar.")
             else:
                 dados = carregar_dados()
                 
