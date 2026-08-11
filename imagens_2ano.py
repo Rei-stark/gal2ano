@@ -41,11 +41,8 @@ st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 8px;'>Desenvolv
 if "upload_message" not in st.session_state:
     st.session_state.upload_message = ""
 
-if "arquivo_enviado" not in st.session_state:
-    st.session_state.arquivo_enviado = None
-
-if "legenda" not in st.session_state:
-    st.session_state.legenda = ""
+if "uploader_id" not in st.session_state:
+    st.session_state.uploader_id = 0
 
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
@@ -61,7 +58,7 @@ if menu == "Enviar Imagens":
         "Selecione uma imagem por vez", 
         type=["png", "jpg", "jpeg"], 
         accept_multiple_files=False,
-        key="arquivo_enviado"
+        key=f"arquivo_enviado_{st.session_state.uploader_id}"
     )
 
     if arquivo_enviado:
@@ -70,7 +67,7 @@ if menu == "Enviar Imagens":
         img = Image.open(arquivo_enviado)
         img = ImageOps.exif_transpose(img)
         st.image(img, use_container_width=True)
-        legenda = st.text_input("Legenda da imagem", key="legenda")
+        legenda = st.text_input("Legenda da imagem", key=f"legenda_{st.session_state.uploader_id}")
 
         if st.button("Enviar Esta Imagem"):
             if not nome:
@@ -95,8 +92,7 @@ if menu == "Enviar Imagens":
                 
                 salvar_dados(dados)
                 st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
-                st.session_state.arquivo_enviado = None
-                st.session_state.legenda = ""
+                st.session_state.uploader_id += 1
                 st.experimental_rerun()
 
     if st.session_state.upload_message:
