@@ -155,13 +155,13 @@ elif menu == "Ver Galeria":
     st.header("Galeria")
     
     # Botão admin para limpar dados
-    col1, col2 = st.columns([0.8, 0.2])
-    with col2:
-        if st.button("🗑️ Limpar Dados", key="btn_limpar"):
-            with open(ARQUIVO_DADOS, "w") as f:
-                json.dump([], f)
-            st.success("✓ Todos os dados foram removidos!")
-            st.rerun()
+    #col1, col2 = st.columns([0.8, 0.2])
+    #with col2:
+    #    if st.button("🗑️ Limpar Dados", key="btn_limpar"):
+    #        with open(ARQUIVO_DADOS, "w") as f:
+    #            json.dump([], f)
+    #        st.success("✓ Todos os dados foram removidos!")
+    #        st.rerun()
     
     dados = carregar_dados()
     
