@@ -37,8 +37,8 @@ st.set_page_config(page_title="Ferramenta Gal - 2 Ano", layout="centered")
 # Limpar cache ao iniciar
 st.cache_data.clear()
 
-st.title("📸 Ferramenta de Imagens")
-st.subheader("Aplicação para Gerenciamento de Imagens")
+st.title("📸 Painel de Fotos")
+st.subheader("Profª Glauciana - 2º ano 205 - Colégio Losango")
 
 menu = st.radio(
     "O que você deseja fazer?", 
