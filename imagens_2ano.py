@@ -36,42 +36,56 @@ st.title("📸 Mural de Fotos")
 
 menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"], horizontal=True)
 
-st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 8px;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
-
 if "upload_message" not in st.session_state:
     st.session_state.upload_message = ""
 
 if "uploader_id" not in st.session_state:
     st.session_state.uploader_id = 0
 
+if "nome" not in st.session_state:
+    st.session_state.nome = ""
+
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
     st.header("Envie seu trabalho")
     
-    nome = st.text_input("Qual o seu nome?")
-    
-    if 'upload_message' in st.session_state and st.session_state.upload_message:
+    nome = st.text_input("Qual o seu nome?", value=st.session_state.nome, key="nome")
+    st.session_state.nome = nome
+
+    if st.session_state.upload_message:
         st.success(st.session_state.upload_message)
+        st.session_state.upload_message = ""
 
-    # Upload de arquivo único para melhor compatibilidade no Android
-    arquivo_enviado = st.file_uploader(
-        "Selecione uma imagem por vez", 
-        type=["png", "jpg", "jpeg"], 
-        accept_multiple_files=False,
-        key=f"arquivo_enviado_{st.session_state.uploader_id}"
-    )
+    st.info("Escolha uma imagem, adicione uma legenda e clique em enviar. Depois do envio, a tela será limpa para novo envio.")
 
-    if arquivo_enviado:
-        st.write("---")
-        st.subheader("Pré-visualização da imagem")
-        img = Image.open(arquivo_enviado)
-        img = ImageOps.exif_transpose(img)
-        st.image(img, use_container_width=True)
-        legenda = st.text_input("Legenda da imagem", key=f"legenda_{st.session_state.uploader_id}")
+    uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
+    legend_key = f"legenda_{st.session_state.uploader_id}"
+    form_key = f"upload_form_{st.session_state.uploader_id}"
 
-        if st.button("Enviar Esta Imagem"):
+    with st.form(form_key):
+        arquivo_enviado = st.file_uploader(
+            "Selecione uma imagem por vez", 
+            type=["png", "jpg", "jpeg"], 
+            accept_multiple_files=False,
+            key=uploader_key
+        )
+
+        legenda = ""
+        enviar = False
+        if arquivo_enviado:
+            legenda = st.text_input("Legenda da imagem", key=legend_key)
+            st.write("---")
+            st.subheader("Pré-visualização da imagem")
+            img = Image.open(arquivo_enviado)
+            img = ImageOps.exif_transpose(img)
+            st.image(img, use_container_width=True)
+            enviar = st.form_submit_button("Enviar Esta Imagem")
+
+        if enviar:
             if not nome:
                 st.warning("Por favor, preencha o seu nome antes de enviar!")
+            elif not arquivo_enviado:
+                st.warning("Por favor, selecione uma imagem antes de enviar.")
             elif not legenda:
                 st.warning("Por favor, insira a legenda da foto antes de enviar.")
             else:
@@ -91,12 +105,12 @@ if menu == "Enviar Imagens":
                 })
                 
                 salvar_dados(dados)
+                st.session_state.nome = ""
                 st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
                 st.session_state.uploader_id += 1
+                st.experimental_rerun()
 
-    if st.session_state.upload_message:
-        st.success(st.session_state.upload_message)
-        st.session_state.upload_message = ""
+    st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 16px;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
 
 # --- ABA 2: VER GALERIA ---
 elif menu == "Ver Galeria de Todos":
@@ -169,3 +183,28 @@ elif menu == "Ver Galeria de Todos":
                             unsafe_allow_html=True,
                         )
                         st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown(
+    """
+    <style>
+        .app-footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #555;
+            padding: 12px 0;
+            background: rgba(255,255,255,0.94);
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .stApp {
+            padding-bottom: 56px;
+        }
+    </style>
+    <div class='app-footer'>Desenvolvido por: reinaldogalvao@gmail.com</div>
+    """,
+    unsafe_allow_html=True,
+)
