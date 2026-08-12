@@ -87,6 +87,7 @@ st.set_page_config(page_title="Mural de Estudantes", layout="centered")
 
 st.title("📸 Mural de Fotos")
 st.subheader("Profª. Glauciana - 2º ano 2025")
+st.subheader("Colégio Losango")
 
 menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"], horizontal=True)
 
