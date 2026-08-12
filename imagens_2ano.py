@@ -33,6 +33,7 @@ def salvar_dados(dados):
 st.set_page_config(page_title="Mural de Estudantes", layout="centered")
 
 st.title("📸 Mural de Fotos")
+st.subheader("Prof. Glauciana - 2º ano 2025")
 
 menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"], horizontal=True)
 
