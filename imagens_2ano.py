@@ -77,13 +77,14 @@ if menu == "Enviar Imagens":
             img = ImageOps.exif_transpose(img)
             st.image(img, use_container_width=True)
             legenda = st.text_input("Legenda da imagem", key=legend_key)
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                enviar = st.form_submit_button("Enviar Esta Imagem")
-            with col2:
-                cancelar = st.form_submit_button("Cancelar")
         else:
             st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
+
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            enviar = st.form_submit_button("Enviar Esta Imagem", disabled=not arquivo_enviado)
+        with col2:
+            cancelar = st.form_submit_button("Cancelar", disabled=not arquivo_enviado)
 
         if cancelar:
             st.session_state.uploader_id += 1
