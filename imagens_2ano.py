@@ -56,7 +56,6 @@ if menu == "Enviar Imagens":
     nome_key = f"nome_{st.session_state.uploader_id}"
     uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
     legend_key = f"legenda_{st.session_state.uploader_id}"
-    form_key = f"upload_form_{st.session_state.uploader_id}"
 
     arquivo_enviado = st.file_uploader(
         "Selecione uma imagem por vez", 
@@ -65,59 +64,58 @@ if menu == "Enviar Imagens":
         key=uploader_key
     )
 
+    nome = st.text_input("Qual o seu nome?", key=nome_key)
+    legenda = ""
+    enviar = False
+    cancelar = False
+
     if arquivo_enviado:
         st.write("---")
         st.subheader("Pré-visualização da imagem")
         img = Image.open(arquivo_enviado)
         img = ImageOps.exif_transpose(img)
         st.image(img, use_container_width=True)
+        legenda = st.text_input("Legenda da imagem", key=legend_key)
 
-    with st.form(form_key):
-        nome = st.text_input("Qual o seu nome?", key=nome_key)
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            enviar = st.button("Enviar Esta Imagem", key=f"enviar_{uploader_key}")
+        with col2:
+            cancelar = st.button("Cancelar", key=f"cancelar_{uploader_key}")
+    else:
+        st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
 
-        legenda = ""
-        enviar = False
-        cancelar = False
-        if arquivo_enviado:
-            legenda = st.text_input("Legenda da imagem", key=legend_key)
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                enviar = st.form_submit_button("Enviar Esta Imagem")
-            with col2:
-                cancelar = st.form_submit_button("Cancelar")
+    if cancelar:
+        st.session_state.uploader_id += 1
+        st.experimental_rerun()
+
+    if enviar:
+        if not nome:
+            st.warning("Por favor, preencha o seu nome antes de enviar!")
+        elif not arquivo_enviado:
+            st.warning("Por favor, selecione uma imagem antes de enviar.")
+        elif not legenda:
+            st.warning("Por favor, insira a legenda da foto antes de enviar.")
         else:
-            st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
-
-        if cancelar:
+            dados = carregar_dados()
+            
+            extensao = arquivo_enviado.name.split('.')[-1]
+            novo_nome_arquivo = f"{uuid.uuid4()}.{extensao}"
+            caminho_arquivo = os.path.join(PASTA_UPLOADS, novo_nome_arquivo)
+            
+            with open(caminho_arquivo, "wb") as f:
+                f.write(arquivo_enviado.getbuffer())
+                
+            dados.append({
+                "estudante": nome,
+                "caminho_imagem": caminho_arquivo,
+                "legenda": legenda
+            })
+            
+            salvar_dados(dados)
+            st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
             st.session_state.uploader_id += 1
-
-        if enviar:
-            if not nome:
-                st.warning("Por favor, preencha o seu nome antes de enviar!")
-            elif not arquivo_enviado:
-                st.warning("Por favor, selecione uma imagem antes de enviar.")
-            elif not legenda:
-                st.warning("Por favor, insira a legenda da foto antes de enviar.")
-            else:
-                dados = carregar_dados()
-                
-                extensao = arquivo_enviado.name.split('.')[-1]
-                novo_nome_arquivo = f"{uuid.uuid4()}.{extensao}"
-                caminho_arquivo = os.path.join(PASTA_UPLOADS, novo_nome_arquivo)
-                
-                with open(caminho_arquivo, "wb") as f:
-                    f.write(arquivo_enviado.getbuffer())
-                    
-                dados.append({
-                    "estudante": nome,
-                    "caminho_imagem": caminho_arquivo,
-                    "legenda": legenda
-                })
-                
-                salvar_dados(dados)
-                st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
-                st.session_state.uploader_id += 1
-                # Streamlit já faz rerun automaticamente após o envio do formulário.
+            st.experimental_rerun()
 
     st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 16px;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
 
