@@ -68,6 +68,8 @@ if menu == "Enviar Imagens":
         )
 
         legenda = ""
+        enviar = False
+        cancelar = False
         if arquivo_enviado:
             st.write("---")
             st.subheader("Pré-visualização da imagem")
@@ -75,10 +77,16 @@ if menu == "Enviar Imagens":
             img = ImageOps.exif_transpose(img)
             st.image(img, use_container_width=True)
             legenda = st.text_input("Legenda da imagem", key=legend_key)
-
-        enviar = st.form_submit_button("Enviar Esta Imagem")
-        if not arquivo_enviado:
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                enviar = st.form_submit_button("Enviar Esta Imagem")
+            with col2:
+                cancelar = st.form_submit_button("Cancelar")
+        else:
             st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
+
+        if cancelar:
+            st.session_state.uploader_id += 1
 
         if enviar:
             if not nome:
@@ -106,7 +114,7 @@ if menu == "Enviar Imagens":
                 salvar_dados(dados)
                 st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
                 st.session_state.uploader_id += 1
-                st.experimental_rerun()
+                # Streamlit já faz rerun automaticamente após o envio do formulário.
 
     st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 16px;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
 
