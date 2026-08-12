@@ -34,6 +34,9 @@ def salvar_dados(dados):
 # ==========================================
 st.set_page_config(page_title="Ferramenta Gal - 2 Ano", layout="centered")
 
+# Limpar cache ao iniciar
+st.cache_data.clear()
+
 st.title("📸 Ferramenta de Imagens")
 st.subheader("Aplicação para Gerenciamento de Imagens")
 
