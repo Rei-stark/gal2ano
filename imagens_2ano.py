@@ -87,7 +87,6 @@ if menu == "Enviar Imagens":
 
     if cancelar:
         st.session_state.uploader_id += 1
-        st.experimental_rerun()
 
     if enviar:
         if not nome:
@@ -115,9 +114,6 @@ if menu == "Enviar Imagens":
             salvar_dados(dados)
             st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
             st.session_state.uploader_id += 1
-            st.experimental_rerun()
-
-    st.markdown("<p style='font-size:0.9rem; color:#555; margin-top: 16px;'>Desenvolvido por: reinaldogalvao@gmail.com</p>", unsafe_allow_html=True)
 
 # --- ABA 2: VER GALERIA ---
 elif menu == "Ver Galeria de Todos":
