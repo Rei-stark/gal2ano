@@ -42,9 +42,6 @@ if "upload_message" not in st.session_state:
 if "uploader_id" not in st.session_state:
     st.session_state.uploader_id = 0
 
-if "nome" not in st.session_state:
-    st.session_state.nome = ""
-
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
     st.header("Envie seu trabalho")
@@ -55,12 +52,13 @@ if menu == "Enviar Imagens":
 
     st.info("Escolha uma imagem, adicione uma legenda e clique em enviar. Depois do envio, a tela será limpa para novo envio.")
 
+    nome_key = f"nome_{st.session_state.uploader_id}"
     uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
     legend_key = f"legenda_{st.session_state.uploader_id}"
     form_key = f"upload_form_{st.session_state.uploader_id}"
 
     with st.form(form_key):
-        nome = st.text_input("Qual o seu nome?", value=st.session_state.nome, key="nome")
+        nome = st.text_input("Qual o seu nome?", key=nome_key)
 
         arquivo_enviado = st.file_uploader(
             "Selecione uma imagem por vez", 
@@ -69,16 +67,17 @@ if menu == "Enviar Imagens":
             key=uploader_key
         )
 
+        legenda = ""
         if arquivo_enviado:
-            legenda = st.text_input("Legenda da imagem", key=legend_key)
             st.write("---")
             st.subheader("Pré-visualização da imagem")
             img = Image.open(arquivo_enviado)
             img = ImageOps.exif_transpose(img)
             st.image(img, use_container_width=True)
-            enviar = st.form_submit_button("Enviar Esta Imagem")
-        else:
-            enviar = st.form_submit_button("Enviar Esta Imagem")
+            legenda = st.text_input("Legenda da imagem", key=legend_key)
+
+        enviar = st.form_submit_button("Enviar Esta Imagem")
+        if not arquivo_enviado:
             st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
 
         if enviar:
@@ -105,7 +104,6 @@ if menu == "Enviar Imagens":
                 })
                 
                 salvar_dados(dados)
-                st.session_state.nome = ""
                 st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
                 st.session_state.uploader_id += 1
                 st.experimental_rerun()
