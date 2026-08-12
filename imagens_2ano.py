@@ -20,22 +20,28 @@ if not os.path.exists(ARQUIVO_DADOS):
         json.dump([], f)
 
 def carregar_dados():
+    """Carrega dados do arquivo JSON"""
     with open(ARQUIVO_DADOS, "r") as f:
         return json.load(f)
 
 def salvar_dados(dados):
+    """Salva dados no arquivo JSON"""
     with open(ARQUIVO_DADOS, "w") as f:
         json.dump(dados, f)
 
 # ==========================================
 # INTERFACE DO STREAMLIT
 # ==========================================
-st.set_page_config(page_title="Mural de Estudantes", layout="centered")
+st.set_page_config(page_title="Ferramenta Gal - 2 Ano", layout="centered")
 
-st.title("📸 Mural de Fotos")
-st.subheader("Profª. Glauciana - 2º ano 2025")
+st.title("📸 Ferramenta de Imagens")
+st.subheader("Aplicação para Gerenciamento de Imagens")
 
-menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"], horizontal=True)
+menu = st.radio(
+    "O que você deseja fazer?", 
+    ["Enviar Imagens", "Ver Galeria"], 
+    horizontal=True
+)
 
 if "upload_message" not in st.session_state:
     st.session_state.upload_message = ""
@@ -48,12 +54,14 @@ if "uploader_id" not in st.session_state:
 
 
 def reset_upload():
+    """Reseta o formulário de upload"""
     st.session_state.uploader_id += 1
     st.session_state.upload_error = ""
     st.session_state.upload_message = ""
 
 
 def submit_upload():
+    """Processa o envio de uma imagem"""
     nome_key = f"nome_{st.session_state.uploader_id}"
     uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
     legend_key = f"legenda_{st.session_state.uploader_id}"
@@ -94,7 +102,7 @@ def submit_upload():
 
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
-    st.header("Envie seu trabalho")
+    st.header("Envie sua imagem")
 
     if st.session_state.upload_message:
         st.success(st.session_state.upload_message)
@@ -103,7 +111,7 @@ if menu == "Enviar Imagens":
     if st.session_state.upload_error:
         st.warning(st.session_state.upload_error)
 
-    st.info("Escolha uma imagem, adicione uma legenda e clique em enviar. Depois do envio, a tela será limpa para novo envio.")
+    st.info("Escolha uma imagem, adicione uma legenda e clique em enviar.")
 
     nome_key = f"nome_{st.session_state.uploader_id}"
     uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
@@ -111,9 +119,9 @@ if menu == "Enviar Imagens":
     form_key = f"upload_form_{st.session_state.uploader_id}"
 
     with st.form(key=form_key):
-        nome = st.text_input("Qual o seu nome?", key=nome_key)
+        nome = st.text_input("Qual é seu nome?", key=nome_key)
         arquivo_enviado = st.file_uploader(
-            "Selecione uma imagem por vez", 
+            "Selecione uma imagem", 
             type=["png", "jpg", "jpeg"], 
             accept_multiple_files=False,
             key=uploader_key
@@ -121,16 +129,16 @@ if menu == "Enviar Imagens":
 
         if arquivo_enviado:
             st.write("---")
-            st.subheader("Pré-visualização da imagem")
+            st.subheader("Pré-visualização")
             img = Image.open(arquivo_enviado)
             img = ImageOps.exif_transpose(img)
             st.image(img, use_container_width=True)
             legenda = st.text_input("Legenda da imagem", key=legend_key)
         else:
             legenda = ""
-            st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
+            st.caption("Selecione uma imagem para ver a pré-visualização.")
 
-        enviar = st.form_submit_button("Enviar Esta Imagem")
+        enviar = st.form_submit_button("Enviar Imagem")
 
     cancelar = st.button("Cancelar")
 
@@ -140,16 +148,16 @@ if menu == "Enviar Imagens":
         reset_upload()
 
 # --- ABA 2: VER GALERIA ---
-elif menu == "Ver Galeria de Todos":
-    st.header("Galeria da Turma")
+elif menu == "Ver Galeria":
+    st.header("Galeria")
     
     dados = carregar_dados()
     
     if not dados:
-        st.info("Nenhuma imagem foi enviada ainda. Seja o primeiro!")
+        st.info("Nenhuma imagem foi enviada ainda.")
     else:
         nomes_estudantes = sorted({item["estudante"] for item in dados if item.get("estudante")})
-        selecionado = st.selectbox("Filtrar por estudante:", ["Todos"] + nomes_estudantes)
+        selecionado = st.selectbox("Filtrar por:", ["Todas"] + nomes_estudantes)
 
         st.markdown(
             """
@@ -182,13 +190,13 @@ elif menu == "Ver Galeria de Todos":
             unsafe_allow_html=True,
         )
 
-        if selecionado == "Todos":
+        if selecionado == "Todas":
             itens_filtrados = dados
         else:
             itens_filtrados = [item for item in dados if item["estudante"] == selecionado]
 
         if not itens_filtrados:
-            st.info("Nenhuma imagem encontrada para o estudante selecionado.")
+            st.info("Nenhuma imagem encontrada.")
         else:
             grupos_por_estudante = {}
             for item in itens_filtrados:
@@ -204,8 +212,8 @@ elif menu == "Ver Galeria de Todos":
                         )
                         st.image(item["caminho_imagem"], use_container_width=True)
                         st.markdown(
-                            f"<p class='legend-text'>" \
-                            f"{item['legenda'] or 'Sem legenda'}" \
+                            f"<p class='legend-text'>"
+                            f"{item['legenda'] or 'Sem legenda'}"
                             f"</p>",
                             unsafe_allow_html=True,
                         )
