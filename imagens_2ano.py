@@ -48,9 +48,6 @@ if "nome" not in st.session_state:
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
     st.header("Envie seu trabalho")
-    
-    nome = st.text_input("Qual o seu nome?", value=st.session_state.nome, key="nome")
-    st.session_state.nome = nome
 
     if st.session_state.upload_message:
         st.success(st.session_state.upload_message)
@@ -63,6 +60,8 @@ if menu == "Enviar Imagens":
     form_key = f"upload_form_{st.session_state.uploader_id}"
 
     with st.form(form_key):
+        nome = st.text_input("Qual o seu nome?", value=st.session_state.nome, key="nome")
+
         arquivo_enviado = st.file_uploader(
             "Selecione uma imagem por vez", 
             type=["png", "jpg", "jpeg"], 
@@ -70,8 +69,6 @@ if menu == "Enviar Imagens":
             key=uploader_key
         )
 
-        legenda = ""
-        enviar = False
         if arquivo_enviado:
             legenda = st.text_input("Legenda da imagem", key=legend_key)
             st.write("---")
@@ -80,6 +77,9 @@ if menu == "Enviar Imagens":
             img = ImageOps.exif_transpose(img)
             st.image(img, use_container_width=True)
             enviar = st.form_submit_button("Enviar Esta Imagem")
+        else:
+            enviar = st.form_submit_button("Enviar Esta Imagem")
+            st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
 
         if enviar:
             if not nome:
@@ -183,28 +183,3 @@ elif menu == "Ver Galeria de Todos":
                             unsafe_allow_html=True,
                         )
                         st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown(
-    """
-    <style>
-        .app-footer {
-            position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #555;
-            padding: 12px 0;
-            background: rgba(255,255,255,0.94);
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
-            z-index: 1000;
-        }
-        .stApp {
-            padding-bottom: 56px;
-        }
-    </style>
-    <div class='app-footer'>Desenvolvido por: reinaldogalvao@gmail.com</div>
-    """,
-    unsafe_allow_html=True,
-)
