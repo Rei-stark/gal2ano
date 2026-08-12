@@ -108,37 +108,36 @@ if menu == "Enviar Imagens":
     nome_key = f"nome_{st.session_state.uploader_id}"
     uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
     legend_key = f"legenda_{st.session_state.uploader_id}"
+    form_key = f"upload_form_{st.session_state.uploader_id}"
 
-    arquivo_enviado = st.file_uploader(
-        "Selecione uma imagem por vez", 
-        type=["png", "jpg", "jpeg"], 
-        accept_multiple_files=False,
-        key=uploader_key
-    )
+    with st.form(key=form_key):
+        nome = st.text_input("Qual o seu nome?", key=nome_key)
+        arquivo_enviado = st.file_uploader(
+            "Selecione uma imagem por vez", 
+            type=["png", "jpg", "jpeg"], 
+            accept_multiple_files=False,
+            key=uploader_key
+        )
 
-    nome = st.text_input("Qual o seu nome?", key=nome_key)
-    legenda = ""
+        if arquivo_enviado:
+            st.write("---")
+            st.subheader("Pré-visualização da imagem")
+            img = Image.open(arquivo_enviado)
+            img = ImageOps.exif_transpose(img)
+            st.image(img, use_container_width=True)
+            legenda = st.text_input("Legenda da imagem", key=legend_key)
+        else:
+            legenda = ""
+            st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
 
-    if arquivo_enviado:
-        st.write("---")
-        st.subheader("Pré-visualização da imagem")
-        img = Image.open(arquivo_enviado)
-        img = ImageOps.exif_transpose(img)
-        st.image(img, use_container_width=True)
-        legenda = st.text_input("Legenda da imagem", key=legend_key)
+        enviar = st.form_submit_button("Enviar Esta Imagem")
 
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            enviar = st.button("Enviar Esta Imagem", key=f"enviar_{uploader_key}")
-        with col2:
-            cancelar = st.button("Cancelar", key=f"cancelar_{uploader_key}")
+    cancelar = st.button("Cancelar")
 
-        if enviar:
-            submit_upload()
-        if cancelar:
-            reset_upload()
-    else:
-        st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
+    if enviar:
+        submit_upload()
+    if cancelar:
+        reset_upload()
 
 # --- ABA 2: VER GALERIA ---
 elif menu == "Ver Galeria de Todos":
