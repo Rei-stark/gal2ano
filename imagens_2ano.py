@@ -33,15 +33,64 @@ def salvar_dados(dados):
 st.set_page_config(page_title="Mural de Estudantes", layout="centered")
 
 st.title("📸 Mural de Fotos")
-st.subheader("Prof. Glauciana - 2º ano 2025")
+st.subheader("Profª. Glauciana - 2º ano 2025")
 
 menu = st.radio("O que você deseja fazer?", ["Enviar Imagens", "Ver Galeria de Todos"], horizontal=True)
 
 if "upload_message" not in st.session_state:
     st.session_state.upload_message = ""
 
+if "upload_error" not in st.session_state:
+    st.session_state.upload_error = ""
+
 if "uploader_id" not in st.session_state:
     st.session_state.uploader_id = 0
+
+
+def reset_upload():
+    st.session_state.uploader_id += 1
+    st.session_state.upload_error = ""
+    st.session_state.upload_message = ""
+
+
+def submit_upload():
+    nome_key = f"nome_{st.session_state.uploader_id}"
+    uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
+    legend_key = f"legenda_{st.session_state.uploader_id}"
+
+    nome = st.session_state.get(nome_key, "")
+    legenda = st.session_state.get(legend_key, "")
+    arquivo_enviado = st.session_state.get(uploader_key)
+
+    if not nome:
+        st.session_state.upload_error = "Por favor, preencha o seu nome antes de enviar!"
+        return
+    if not arquivo_enviado:
+        st.session_state.upload_error = "Por favor, selecione uma imagem antes de enviar."
+        return
+    if not legenda:
+        st.session_state.upload_error = "Por favor, insira a legenda da foto antes de enviar."
+        return
+
+    dados = carregar_dados()
+    extensao = arquivo_enviado.name.split('.')[-1]
+    novo_nome_arquivo = f"{uuid.uuid4()}.{extensao}"
+    caminho_arquivo = os.path.join(PASTA_UPLOADS, novo_nome_arquivo)
+
+    with open(caminho_arquivo, "wb") as f:
+        f.write(arquivo_enviado.getbuffer())
+
+    dados.append({
+        "estudante": nome,
+        "caminho_imagem": caminho_arquivo,
+        "legenda": legenda
+    })
+
+    salvar_dados(dados)
+    st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
+    st.session_state.upload_error = ""
+    st.session_state.uploader_id += 1
+
 
 # --- ABA 1: ENVIAR IMAGENS ---
 if menu == "Enviar Imagens":
@@ -50,6 +99,9 @@ if menu == "Enviar Imagens":
     if st.session_state.upload_message:
         st.success(st.session_state.upload_message)
         st.session_state.upload_message = ""
+
+    if st.session_state.upload_error:
+        st.warning(st.session_state.upload_error)
 
     st.info("Escolha uma imagem, adicione uma legenda e clique em enviar. Depois do envio, a tela será limpa para novo envio.")
 
@@ -66,8 +118,6 @@ if menu == "Enviar Imagens":
 
     nome = st.text_input("Qual o seu nome?", key=nome_key)
     legenda = ""
-    enviar = False
-    cancelar = False
 
     if arquivo_enviado:
         st.write("---")
@@ -82,38 +132,13 @@ if menu == "Enviar Imagens":
             enviar = st.button("Enviar Esta Imagem", key=f"enviar_{uploader_key}")
         with col2:
             cancelar = st.button("Cancelar", key=f"cancelar_{uploader_key}")
+
+        if enviar:
+            submit_upload()
+        if cancelar:
+            reset_upload()
     else:
         st.caption("Selecione uma imagem para ver a pré-visualização e liberar o envio.")
-
-    if cancelar:
-        st.session_state.uploader_id += 1
-
-    if enviar:
-        if not nome:
-            st.warning("Por favor, preencha o seu nome antes de enviar!")
-        elif not arquivo_enviado:
-            st.warning("Por favor, selecione uma imagem antes de enviar.")
-        elif not legenda:
-            st.warning("Por favor, insira a legenda da foto antes de enviar.")
-        else:
-            dados = carregar_dados()
-            
-            extensao = arquivo_enviado.name.split('.')[-1]
-            novo_nome_arquivo = f"{uuid.uuid4()}.{extensao}"
-            caminho_arquivo = os.path.join(PASTA_UPLOADS, novo_nome_arquivo)
-            
-            with open(caminho_arquivo, "wb") as f:
-                f.write(arquivo_enviado.getbuffer())
-                
-            dados.append({
-                "estudante": nome,
-                "caminho_imagem": caminho_arquivo,
-                "legenda": legenda
-            })
-            
-            salvar_dados(dados)
-            st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
-            st.session_state.uploader_id += 1
 
 # --- ABA 2: VER GALERIA ---
 elif menu == "Ver Galeria de Todos":
