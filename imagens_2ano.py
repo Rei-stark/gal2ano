@@ -147,33 +147,27 @@ if menu == "Enviar Imagens":
     nome_key = f"nome_{st.session_state.uploader_id}"
     uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
     legend_key = f"legenda_{st.session_state.uploader_id}"
-    form_key = f"upload_form_{st.session_state.uploader_id}"
 
-    with st.form(key=form_key):
-        nome = st.text_input("Qual é seu nome?", key=nome_key)
-        arquivo_enviado = st.file_uploader(
-            "Selecione uma imagem", 
-            type=["png", "jpg", "jpeg"], 
-            accept_multiple_files=False,
-            key=uploader_key
-        )
+    nome = st.text_input("Qual é seu nome?", key=nome_key)
+    arquivo_enviado = st.file_uploader(
+        "Selecione uma imagem",
+        type=["png", "jpg", "jpeg"],
+        accept_multiple_files=False,
+        key=uploader_key,
+    )
 
-        if arquivo_enviado:
-            st.write("---")
-            st.subheader("Pré-visualização")
-            img = Image.open(arquivo_enviado)
-            img = ImageOps.exif_transpose(img)
-            st.image(img, use_container_width=True)
-        else:
-            st.caption("Selecione uma imagem para ver a pré-visualização.")
-
-        legenda = st.text_input(
-            "Legenda da imagem",
-            key=legend_key,
-            disabled=not bool(arquivo_enviado),
-        )
-
-        enviar = st.form_submit_button("Enviar Imagem")
+    if arquivo_enviado:
+        st.write("---")
+        st.subheader("Pré-visualização")
+        img = Image.open(arquivo_enviado)
+        img = ImageOps.exif_transpose(img)
+        st.image(img, use_container_width=True)
+        legenda = st.text_input("Legenda da imagem", key=legend_key)
+        enviar = st.button("Enviar Imagem", type="primary")
+    else:
+        legenda = ""
+        enviar = False
+        st.caption("Selecione uma imagem para ativar o campo de legenda.")
 
     cancelar = st.button("Cancelar")
 
