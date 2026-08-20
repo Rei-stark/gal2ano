@@ -9,6 +9,8 @@ create table if not exists public.fotos (
 
 alter table public.fotos enable row level security;
 
+grant select, insert on public.fotos to anon, authenticated;
+
 create policy "Leitura publica das fotos"
 on public.fotos for select
 to anon, authenticated
