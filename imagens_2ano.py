@@ -164,10 +164,14 @@ if menu == "Enviar Imagens":
             img = Image.open(arquivo_enviado)
             img = ImageOps.exif_transpose(img)
             st.image(img, use_container_width=True)
-            legenda = st.text_input("Legenda da imagem", key=legend_key)
         else:
-            legenda = ""
             st.caption("Selecione uma imagem para ver a pré-visualização.")
+
+        legenda = st.text_input(
+            "Legenda da imagem",
+            key=legend_key,
+            disabled=not bool(arquivo_enviado),
+        )
 
         enviar = st.form_submit_button("Enviar Imagem")
 
