@@ -84,16 +84,8 @@ def reset_upload():
     st.session_state.upload_message = ""
 
 
-def submit_upload():
+def submit_upload(nome, legenda, arquivo_enviado):
     """Processa o envio de uma imagem"""
-    nome_key = f"nome_{st.session_state.uploader_id}"
-    uploader_key = f"arquivo_enviado_{st.session_state.uploader_id}"
-    legend_key = f"legenda_{st.session_state.uploader_id}"
-
-    nome = st.session_state.get(nome_key, "")
-    legenda = st.session_state.get(legend_key, "")
-    arquivo_enviado = st.session_state.get(uploader_key)
-
     if not nome:
         st.session_state.upload_error = "Por favor, preencha o seu nome antes de enviar!"
         return
@@ -182,7 +174,7 @@ if menu == "Enviar Imagens":
     cancelar = st.button("Cancelar")
 
     if enviar:
-        submit_upload()
+        submit_upload(nome, legenda, arquivo_enviado)
     if cancelar:
         reset_upload()
 
