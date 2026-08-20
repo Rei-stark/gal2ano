@@ -132,6 +132,7 @@ def submit_upload(nome, legenda, arquivo_enviado):
     st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
     st.session_state.upload_error = ""
     st.session_state.uploader_id += 1
+    st.rerun()
 
 
 # --- ABA 1: ENVIAR IMAGENS ---
