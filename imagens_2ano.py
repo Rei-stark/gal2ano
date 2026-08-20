@@ -86,6 +86,9 @@ def reset_upload():
 
 def submit_upload(nome, legenda, arquivo_enviado):
     """Processa o envio de uma imagem"""
+    nome = nome.strip() if isinstance(nome, str) else nome
+    legenda = legenda.strip() if isinstance(legenda, str) else legenda
+
     if not nome:
         st.session_state.upload_error = "Por favor, preencha o seu nome antes de enviar!"
         return
@@ -163,13 +166,19 @@ if menu == "Enviar Imagens":
         img = ImageOps.exif_transpose(img)
         st.image(img, use_container_width=True)
         legenda = st.text_input("Legenda da imagem", key=legend_key)
-        enviar = st.button("Enviar Imagem", type="primary")
+        enviar = st.button(
+            "Enviar Imagem",
+            key=f"enviar_{st.session_state.uploader_id}",
+        )
     else:
         legenda = ""
         enviar = False
         st.caption("Selecione uma imagem para ativar o campo de legenda.")
 
-    cancelar = st.button("Cancelar")
+    cancelar = st.button(
+        "Cancelar",
+        key=f"cancelar_{st.session_state.uploader_id}",
+    )
 
     if enviar:
         submit_upload(nome, legenda, arquivo_enviado)
