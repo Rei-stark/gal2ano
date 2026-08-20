@@ -1,33 +1,40 @@
 import streamlit as st
 import os
-import json
 import uuid
 from PIL import Image, ImageOps
+from supabase import Client, create_client
 
 # ==========================================
 # CONFIGURAÇÕES INICIAIS E BANCO DE DADOS
 # ==========================================
-PASTA_UPLOADS = "uploads"
-ARQUIVO_DADOS = "dados.json"
+BUCKET_IMAGENS = "fotos"
 
-# Cria a pasta de uploads se não existir
-if not os.path.exists(PASTA_UPLOADS):
-    os.makedirs(PASTA_UPLOADS)
+@st.cache_resource
+def obter_supabase() -> Client:
+    try:
+        url = st.secrets["SUPABASE_URL"]
+        chave = st.secrets["SUPABASE_KEY"]
+    except (FileNotFoundError, KeyError):
+        url = os.getenv("SUPABASE_URL")
+        chave = os.getenv("SUPABASE_KEY")
 
-# Cria o arquivo JSON (nosso "banco de dados") se não existir
-if not os.path.exists(ARQUIVO_DADOS):
-    with open(ARQUIVO_DADOS, "w") as f:
-        json.dump([], f)
+    if not url or not chave:
+        st.error("Configure SUPABASE_URL e SUPABASE_KEY antes de iniciar o aplicativo.")
+        st.stop()
+
+    return create_client(url, chave)
+
+
+supabase = obter_supabase()
 
 def carregar_dados():
-    """Carrega dados do arquivo JSON"""
-    with open(ARQUIVO_DADOS, "r") as f:
-        return json.load(f)
-
-def salvar_dados(dados):
-    """Salva dados no arquivo JSON"""
-    with open(ARQUIVO_DADOS, "w") as f:
-        json.dump(dados, f)
+    resposta = (
+        supabase.table("fotos")
+        .select("id, estudante, legenda, imagem_url, criado_em")
+        .order("criado_em", desc=False)
+        .execute()
+    )
+    return resposta.data
 
 # ==========================================
 # INTERFACE DO STREAMLIT
@@ -83,21 +90,33 @@ def submit_upload():
         st.session_state.upload_error = "Por favor, insira a legenda da foto antes de enviar."
         return
 
-    dados = carregar_dados()
     extensao = arquivo_enviado.name.split('.')[-1]
     novo_nome_arquivo = f"{uuid.uuid4()}.{extensao}"
-    caminho_arquivo = os.path.join(PASTA_UPLOADS, novo_nome_arquivo)
+    conteudo = arquivo_enviado.getvalue()
 
-    with open(caminho_arquivo, "wb") as f:
-        f.write(arquivo_enviado.getbuffer())
+    try:
+        supabase.storage.from_(BUCKET_IMAGENS).upload(
+            novo_nome_arquivo,
+            conteudo,
+            {"content-type": arquivo_enviado.type},
+        )
+        imagem_url = supabase.storage.from_(BUCKET_IMAGENS).get_public_url(
+            novo_nome_arquivo
+        )
+        supabase.table("fotos").insert({
+            "estudante": nome,
+            "legenda": legenda,
+            "imagem_path": novo_nome_arquivo,
+            "imagem_url": imagem_url,
+        }).execute()
+    except Exception as erro:
+        try:
+            supabase.storage.from_(BUCKET_IMAGENS).remove([novo_nome_arquivo])
+        except Exception:
+            pass
+        st.session_state.upload_error = f"Não foi possível salvar a imagem: {erro}"
+        return
 
-    dados.append({
-        "estudante": nome,
-        "caminho_imagem": caminho_arquivo,
-        "legenda": legenda
-    })
-
-    salvar_dados(dados)
     st.session_state.upload_message = "🎉 Imagem enviada com sucesso! Pronto para novo envio."
     st.session_state.upload_error = ""
     st.session_state.uploader_id += 1
@@ -217,12 +236,12 @@ elif menu == "Ver Galeria":
             for estudante, itens in grupos_por_estudante.items():
                 st.subheader(estudante)
                 for item in itens:
-                    if os.path.exists(item["caminho_imagem"]):
+                    if item.get("imagem_url"):
                         st.markdown(
                             "<div class='gallery-card'>",
                             unsafe_allow_html=True,
                         )
-                        st.image(item["caminho_imagem"], use_container_width=True)
+                        st.image(item["imagem_url"], use_container_width=True)
                         st.markdown(
                             f"<p class='legend-text'>"
                             f"{item['legenda'] or 'Sem legenda'}"

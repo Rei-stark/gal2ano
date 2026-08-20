@@ -3,3 +3,12 @@ pandas>=1.3.0
 matplotlib>=3.4.0
 pillow>=8.3.0
 opencv-python>=4.5.0
+scikit-learn
+jupyter
+ipykernel
+seaborn
+scipy
+xgboost
+joblib
+pytest
+supabase
