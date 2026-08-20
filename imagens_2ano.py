@@ -1,8 +1,10 @@
 import streamlit as st
 import os
+import socket
 import uuid
 from PIL import Image, ImageOps
 from supabase import Client, create_client
+from urllib.parse import urlparse
 
 # ==========================================
 # CONFIGURAÇÕES INICIAIS E BANCO DE DADOS
@@ -20,6 +22,18 @@ def obter_supabase() -> Client:
 
     if not url or not chave:
         st.error("Configure SUPABASE_URL e SUPABASE_KEY antes de iniciar o aplicativo.")
+        st.stop()
+
+    url = str(url).strip().strip('"').strip("'")
+    endereco = urlparse(url)
+    if endereco.scheme != "https" or not endereco.hostname:
+        st.error("SUPABASE_URL deve ser a URL HTTPS do projeto, por exemplo: https://seu-projeto.supabase.co")
+        st.stop()
+
+    try:
+        socket.gethostbyname(endereco.hostname)
+    except socket.gaierror:
+        st.error(f"Não foi possível localizar o host do Supabase: {endereco.hostname}. Confira SUPABASE_URL nas Secrets.")
         st.stop()
 
     return create_client(url, chave)
@@ -109,6 +123,9 @@ def submit_upload():
             "imagem_path": novo_nome_arquivo,
             "imagem_url": imagem_url,
         }).execute()
+    except socket.gaierror:
+        st.session_state.upload_error = "Não foi possível localizar o servidor do Supabase. Confira se SUPABASE_URL é a URL do projeto, como https://seu-projeto.supabase.co."
+        return
     except Exception as erro:
         try:
             supabase.storage.from_(BUCKET_IMAGENS).remove([novo_nome_arquivo])
